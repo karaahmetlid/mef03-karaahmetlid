@@ -1,0 +1,59 @@
+---
+title: 'RMarkdown Homework:'
+author: "Dost Karaahmetli"
+date: "September 27, 2019"
+output: html_document
+---
+
+--------------------------------------
+
+##Introduction
+
+Hi! My name is Dost Karaahmetli. I am an executive and strategist with a history of working in the marketing and advertising industries.  I work with companies to create and implement marketing strategies. I help them create a detailed marketing plan, determine the marketing message, and identify the appropriate marketing mix to get the message out. 
+
+I hold a bachelor's degree in Political Sciences and come from a strategy background. Forced by the spread of technology and information, the common understanding of 4Ps of marketing shifted to a tragic end. As a firm believer of conventional marketing is long overdue, I've set my eyes on data-driven marketing models. For this reason, I found it essential to keep up with the advancements in the field of Data Analytics and prepare myself to meet the demanding standards of today's and tomorrow's business world. I plan to implement data science skills into my possible future marketing business venture, where I believe I can develop more tangible and measurable strategies.
+
+----------------------------------------------------------------------------------------
+
+##UseR-2019 Videos 
+
+
+#####[useR! 2019 Toulouse - Talk Social Science Marketing & Business - C. Chapman & E. Bahna](https://www.youtube.com/watch?v=oO_HZSNowMM)
+
+In this video, Chris Chapman and Eric Bahna from Google are making a presentation about the *"choicetools package"* which they have developped. Eric Bahna starts the presentation by talking about the motivation behind the idea. 
+
+The *"choicetools package"* is a tool for making **Choice Based Conjoint Analysis**, which is a technique to assess different features of a product or a service through quantitative research, such as customet surveys. 
+
+The presenters share the features of their tool, while giving information about the basics of conjoint analysis, as well as giving examples and use cases on real and imaginary business situations. 
+
+The contents of the presentation is as follows:
+
+- Basics of Conjoint Analysis surveys for product preference
+- Creating a survey and example data
+- Modeling respondents' preferences
+- Additional features in *"choicetools package"*
+
+You can access the slides of th presentation through [R for Marketing Research and Analytics website](http://r-marketing.r-forge.r-project.org/slides/user2019/conjoint-slides.html#/ "Presentation, UseR-2019 Toulouse, C. Chapman & E. Bahna"). 
+
+----------------------------------------------------------------------------------------
+
+##R Posts Relevant to My Work
+
+
+####1. [Why R for Marketing Professionals?](https://www.edureka.co/blog/r-for-marketing-professionals/)
+
+This is a blog post arguing about the cruicial role of data science and "R" on marketing.
+
+####2. [Why Machine Learning is More Practical than Econometrics in the Real World](https://www.remixinstitute.com/blog/why-machine-learning-is-more-practical-than-time-series-in-the-real-world/#.XY3eaigzZPY)
+
+This is a blog post explaining the advantages of **Machine Learning** over **Econometrics**. It argues that, while it appears that Econometric methods are better at forecasting a single series, they aren't as good at forecasting multiple series, which is likely a more common requirement in the real world. 
+
+####3. [6 Reasons To Learn R For Business](https://www.business-science.io/business/2017/12/27/six-reasons-to-use-R-for-business.html)
+
+This is a promotional post listing the benefits of learning and applying "R" for business people.
+
+----------------------------------------------------------------------------------------
+
+
+
+
