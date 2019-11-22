@@ -1,0 +1,211 @@
+---
+title: "Çelebi Cars"
+author: "Dost Karaahmetli"
+date: "November 21, 2019"
+output: 
+  html_document: 
+    fig_height: 8
+    fig_width: 15
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Suzuki Vitara ve Renault Fluence'ı sattıktan sonra %25 tasarruf ederek kaç TL'ye araba satın alabiliriz?
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(rvest)
+library(ggplot2)
+library(stringr)
+library(dlookr)
+```
+
+## Sahibinden.com verileriyle Suzuki Vitara analizi
+
+### Sayfalardan veri çekme ve okuma
+```{r}
+# Suzuki Vitara ilanlarının yer aldığı sayfalar
+url <- "https://www.sahibinden.com/arazi-suv-pickup-suzuki-vitara" 
+suzuki <- read_html(url) 
+
+nodes <- suzuki %>% html_nodes('.mtmdef') %>% html_text() 
+
+
+num_of_nodes <- regmatches(nodes, gregexpr('[[:digit:]]+', nodes))
+num_of_nodes <- as.numeric(unlist(num_of_nodes))
+
+list_of_pages <- str_c(url, '?pagingOffset=', seq(0, 260, 20))
+list_of_pages <- if_else(
+  str_detect(list_of_pages, 'pagingOffset=0') == TRUE,
+  "https://www.sahibinden.com/arazi-suv-pickup-suzuki-vitara", 
+  list_of_pages
+)
+list_of_pages 
+```
+
+### Tüm sayfalardaki veriyi tablo haline getirme
+```{r}
+
+vitara <- suzuki %>% html_nodes('#searchResultsTable') %>% html_table(fill = TRUE)
+vitara <- as.data.frame(vitara)[-1]
+
+get_tables <- function(vitara_df) {
+  as.data.frame(
+    read_html(vitara_df) %>%
+      html_nodes('#searchResultsTable') %>% html_table(fill = TRUE)
+  )
+}
+
+vitara_data <- list_of_pages %>%
+  map(get_tables) %>%
+  bind_rows()
+
+str(vitara_data) # 286 satır, 10 sütundan oluşan bir tablo elde ediyoruz
+```
+
+### Veri temizleme
+```{r}
+
+# Başlıkları düzenleme
+names(vitara_data) <- vitara_data[1,] 
+names(vitara_data)[4] <- "Yil"
+names(vitara_data) 
+
+# İhtiyacımız olmayan sütunlardan kurtulma
+vitara_data <- vitara_data[, c(-1, -3, -6, -8, -9, -10)] 
+
+# Veri setine ait olmayan satırlardan kurtulma 
+vitara_data <- vitara_data[-which(vitara_data$Model %in% c("", NA, "Model", "Siz de ilaninizin yukarida yer almasini istiyorsaniz tiklayin.")), ]
+vitara_data <- vitara_data[c(-2, -3), ]
+
+# Değerlerin düzenlenmesi
+vitara_data <- vitara_data %>% mutate(Fiyat = str_remove_all(vitara_data$Fiyat, " TL"))
+vitara_data <- vitara_data %>% 
+  mutate_at(vars(c(Fiyat, KM, Yil)), funs(as.numeric)) %>% 
+  mutate_if(is.character, as.factor)
+glimpse(vitara_data) 
+
+vitara_data <- vitara_data %>% mutate(Fiyat = vitara_data$Fiyat*1000) %>% mutate(KM = vitara_data$KM*1000)
+head(vitara_data, 15)
+
+```
+
+### Analiz
+```{r}
+# Benzer kriterdeki araçlar
+muadil <- vitara_data %>% 
+  filter(Yil <= 2018  & Yil >= 2016) %>% filter(Model == "1.6 GLX") %>% filter(KM >= 10000 & KM <= 35000)
+
+muadil %>% group_by(Yil) %>%
+  summarise(avgfiyat = round(mean(Fiyat)), avgkm = round(mean(KM)))
+
+```
+
+```{r}
+# Bizimki
+bizim_vitara <- data.frame(Model = "1.6 GLX", Yil = 2018, KM = 21000, Fiyat = mean(muadil$Fiyat)*0.98) 
+bizim_vitara
+```
+
+```{r}
+# Muadil Araçlar
+ggplot(muadil, aes(x=KM, y=Fiyat, color = factor(Yil))) + 
+  geom_point(size = 3) + 
+  theme_minimal() 
+```
+
+```{r}
+# Bizimkiyle birlikte
+ggplot(muadil, aes(x=KM, y=Fiyat, color = factor(Yil))) + 
+  geom_point(size = 2) + 
+  geom_point(data = bizim_vitara, aes(x=KM, y=Fiyat), color = "Dark Red", size = 5) + 
+  geom_text(data = bizim_vitara, aes(label="Bizimki"),hjust=0, vjust=0) + 
+  theme_minimal() 
+
+```
+
+## Sahibinden.com verileriyle Renault Fluence analizi
+
+Yukarıda yapılanları Renault Fluence Authentique için tekrarlıyoruz...
+
+```{r echo=FALSE}
+renurl <- "https://www.sahibinden.com/renault-fluence-1.5-dci-authentique"
+reno <- read_html(renurl) 
+
+nodes <- reno %>% html_nodes('.mtmdef') %>% html_text() 
+
+
+num_of_nodes <- regmatches(nodes, gregexpr('[[:digit:]]+', nodes))
+num_of_nodes <- as.numeric(unlist(num_of_nodes))
+
+list_of_pages <- str_c(renurl, '?pagingOffset=', seq(0, 60, 20))
+list_of_pages <- if_else(
+  str_detect(list_of_pages, 'pagingOffset=0') == TRUE,
+  "https://www.sahibinden.com/renault-fluence-1.5-dci-authentique", 
+  list_of_pages
+)
+list_of_pages
+
+fluence <- reno %>% html_nodes('#searchResultsTable') %>% html_table(fill = TRUE)
+fluence <- as.data.frame(fluence) 
+
+get_tables <- function(fluence_df) {
+  as.data.frame(
+    read_html(fluence_df) %>%
+      html_nodes('#searchResultsTable') %>% html_table(fill = TRUE)
+  )
+}
+
+fluence_data <- list_of_pages %>%
+  map(get_tables) %>%
+  bind_rows()
+
+names(fluence_data) <- fluence_data[1,]
+names(fluence_data)[4] <- "Yil"
+
+
+fluence_data <- fluence_data[, c(-1, -3, -6, -8, -9, -10)]
+fluence_data <- fluence_data[-which(fluence_data$Model %in% c("", NA, "Model", "Siz de ilaninizin yukarida yer almasini istiyorsaniz tiklayin.")), ]
+
+fluence_data <- fluence_data %>% mutate(Fiyat = str_remove_all(fluence_data$Fiyat, " TL"))
+fluence_data <- fluence_data %>% 
+  mutate_at(vars(c(Fiyat, KM, Yil)), funs(as.numeric)) %>% 
+  mutate_if(is.character, as.factor)
+
+glimpse(fluence_data)  
+
+fluence_data <- fluence_data %>% mutate(Fiyat = fluence_data$Fiyat*1000) %>% mutate(KM = fluence_data$KM*1000)
+```
+
+Analizi de benzer şekilde yapıyoruz...
+
+```{r echo=FALSE}
+fluence_data <- fluence_data %>% filter(KM < 180000 & KM > 25000)
+
+fluence_data %>% group_by(Yil) %>%
+  summarise(avgfiyat = round(mean(Fiyat)), avgkm = round(mean(KM)))
+
+bizim_fluence <- data.frame(Model = "Authentique", Yil = 2011, KM = 89000, Fiyat = mean(fluence_data$Fiyat)*1.02) 
+bizim_fluence
+
+ggplot(fluence_data, aes(x=KM, y=Fiyat, color = factor(Yil))) + 
+  geom_point(size = 3) + 
+  theme_minimal() 
+
+ggplot(fluence_data, aes(x=KM, y=Fiyat, color = factor(Yil))) + 
+  geom_point(size = 2) + 
+  geom_point(data = bizim_fluence, aes(x=KM, y=Fiyat), color = "Dark Red", size = 5) + 
+  geom_text(data = bizim_fluence, aes(label="Bizimki"),hjust=0, vjust=0) + 
+  theme_minimal() 
+
+```
+
+## Yukarıdaki sorunun cevabı:
+```{r}
+budget <- round((bizim_vitara$Fiyat + bizim_fluence$Fiyat) * 0.75)
+print(paste0("Evdeki arabaları sattıktan sonra ", budget, " TL'lik yeni bir araba alabiliriz."), bold = T, size = 16)
+```
+
